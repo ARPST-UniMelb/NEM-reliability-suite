@@ -1,0 +1,13 @@
+id_bus,name,alias,active,latitude,longitude,id_area
+1,NQ,Northern Queensland,true,-17.79385,145.5635,1
+2,CQ,Central Queensland,true,-22.8242,149.40361,1
+3,GG,Gladstone Grid,true,-23.842948,151.248803,1
+4,SQ,Southern Queensland,true,-27.476625,153.029934,1
+5,NNSW,Northern New South Wales,true,-30.504711,151.652465,2
+6,CNSW,Central New South Wales,true,-33.4833,150.157717,2
+7,SNW,"Sydney, Newcastle & Wollongong",true,-33.865,151.209444,2
+8,SNSW,Southern New South Wales,true,-35.11098,147.359907,2
+9,VIC,Victoria,true,-37.766053,144.943397,3
+10,TAS,Tasmania,true,-42.880556,147.325,4
+11,CSA,Central South Australia,true,-34.80268,138.52164,5
+12,SESA,South East South Australia,true,-37.6047,140.8373,5
