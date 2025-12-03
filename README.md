@@ -8,12 +8,10 @@ This repository contains some sample data, as well as tutorials and scripts to p
 The source code to obtain these results can be found in the folder ``/tutorials``.
 
 **Distribution of USE events of the NEM in 2028**
-![](./tutorials/figures/PRASNEM_2_USE_Event_Size_Histogram_2028.png)
+![](./scripts/AR-PST%20Interim%20Presentation/figures/PRASNEM_2_USE_Event_Size_Histogram_2028.png)
 
 **ISP 2024 Step Change Scenario Adequacy Levels**
-![](./tutorials/figures/PRASNEM_3_ISP_Step_Change_adequacy.png)
+![](./scripts/AR-PST%20Interim%20Presentation/figures/PRASNEM_3_ISP_Step_Change_adequacy.png)
 
 **Adequacy in 2030 with/without selected transmission expansion**
-![](./tutorials/figures/PRASNEM_4_maps.png)
-
-
+![](./scripts/AR-PST%20Interim%20Presentation/figures/PRASNEM_4_maps.png)
