@@ -1,3 +1,7 @@
+# If not already done, activate and instantiate the local environment before running this script:
+# using Pkg; Pkg.activate("."); Pkg.instantiate()
+
+# Initialising all dependencies and packages
 using PISP
 using PRASNEM
 using Dates
@@ -5,6 +9,10 @@ using SiennaNEM
 using HiGHS
 using Dates
 using JuMP
+
+# =======================================================
+# Generating PISP datasets for the 2024 ISP
+# =======================================================
 
 # Set parameters (see all parameters below)
 reference_trace = 4006  # Use 4006 for the reference trace of the ODP
@@ -19,23 +27,29 @@ PISP.build_ISP24_datasets(
     years        = target_years,
     output_root  = joinpath(@__DIR__, "..", "data", "pisp-datasets"),
     write_csv    = true,
-    write_arrow  = true,
+    write_arrow  = false,
     scenarios    = [1,2,3])
 
+# =======================================================
+# Studying system adequacy with PRASNEM
+# =======================================================
 # Create PRAS file
 tyear             = target_years[1]
+scenario          = 2
 start_dt          = DateTime("$tyear-01-01 00:00:00", dateformat"yyyy-mm-dd HH:MM:SS")
 end_dt            = DateTime("$tyear-12-31 23:00:00", dateformat"yyyy-mm-dd HH:MM:SS")
 input_folder      = joinpath(@__DIR__, "..", "data", "pisp-datasets","out-ref$reference_trace-poe$poe", "csv")
 timeseries_folder = joinpath(input_folder, "schedule-$tyear")
 output_folder     = joinpath(@__DIR__, "..", "data", "pras-files")
-sys_pras          = PRASNEM.create_pras_system(start_dt, end_dt, input_folder, timeseries_folder; output_folder=output_folder, scenario=2) # More optional parameters available (see below)
+sys_pras          = PRASNEM.create_pras_system(start_dt, end_dt, input_folder, timeseries_folder; output_folder=output_folder, scenario=scenario) # More optional parameters available (see below)
 
 # Run adequacy study using PRAS
 shortfall         = PRASNEM.run_pras_study(sys_pras)
 
-scenario                 = 2
-horizon                  = Hour(48)
+# =======================================================
+# Studying system operations with SiennaNEM
+# =======================================================
+horizon                  = Hour(36)
 interval                 = Hour(24)
 simulation_output_folder = joinpath(@__DIR__, "..", "data", "sienna-files")
 simulation_name          = "ref$reference_trace-poe$poe-tyear$tyear-s$scenario"

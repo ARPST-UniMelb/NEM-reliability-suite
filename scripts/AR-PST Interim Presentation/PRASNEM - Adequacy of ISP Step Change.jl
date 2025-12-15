@@ -3,9 +3,6 @@
 
 
 #%% Initialise all dependencies and packages
-using Pkg
-Pkg.develop(path="../PRASNEM.jl") # Adjust path as needed
-Pkg.develop(path="../PISP.jl") # Adjust path as needed
 using PISP
 using PRASNEM
 using PRAS

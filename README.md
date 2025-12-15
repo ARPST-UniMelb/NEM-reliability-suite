@@ -11,7 +11,7 @@ First, clone the project by executing the following instruction in your command 
 git clone "https://github.com/ARPST-UniMelb/NEM-reliability-suite"
 ```
 
-Then start a Julia REPL within the folder and activate and instantiate the local environment:
+Then start a Julia REPL within the folder and activate and instantiate the local environment (*note that this requires ```julia 1.11+```*):
 ```julia
 using Pkg
 Pkg.activate(".")
@@ -46,12 +46,13 @@ using Dates
 
 # Create PRAS file
 tyear             = target_years[1]
+scenario          = 2
 start_dt          = DateTime("$tyear-01-01 00:00:00", dateformat"yyyy-mm-dd HH:MM:SS")
 end_dt            = DateTime("$tyear-12-31 23:00:00", dateformat"yyyy-mm-dd HH:MM:SS")
 input_folder      = joinpath(@__DIR__, "..", "data", "pisp-datasets","out-ref$reference_trace-poe$poe", "csv")
 timeseries_folder = joinpath(input_folder, "schedule-$tyear")
 output_folder     = joinpath(@__DIR__, "..", "data", "pras-files")
-sys_pras          = PRASNEM.create_pras_system(start_dt, end_dt, input_folder, timeseries_folder; output_folder=output_folder, scenario=2) # More optional parameters available (see below)
+sys_pras          = PRASNEM.create_pras_system(start_dt, end_dt, input_folder, timeseries_folder; output_folder=output_folder, scenario=scenario) # More optional parameters available (see below)
 
 # Run adequacy study using PRAS
 shortfall = PRASNEM.run_pras_study(sys_pras);
@@ -63,8 +64,7 @@ To understand the system operation in detail, we utilise ```SiennaNEM``` to run 
 using SiennaNEM
 using HiGHS
 
-scenario                 = 2
-horizon                  = Hour(48)
+horizon                  = Hour(36)
 interval                 = Hour(24)
 simulation_output_folder = joinpath(@__DIR__, "..", "data", "sienna-files")
 simulation_name          = "ref$reference_trace-poe$poe-tyear$tyear-s$scenario"

@@ -4,7 +4,7 @@ using PowerSimulations
 using HiGHS
 using Dates
 
-system_data_dir = "data/nem12/arrow"
+system_data_dir = "data/arrow"
 ts_data_dir     = joinpath(system_data_dir, "schedule-1w")
 scenario_name   = 1
 

@@ -5,7 +5,7 @@ PRAS = PRASNEM.PRAS
 start_dt          = DateTime("2025-01-07 00:00:00", dateformat"yyyy-mm-dd HH:MM:SS")
 end_dt            = DateTime("2025-01-13 23:00:00", dateformat"yyyy-mm-dd HH:MM:SS")
 input_folder      = joinpath(pwd(), "data", "csv")
-output_folder     = joinpath(pwd(), "out")
+output_folder     = joinpath(pwd(), "pras")
 timeseries_folder = joinpath(input_folder, "schedule-1w")
 
 # ================================== #
