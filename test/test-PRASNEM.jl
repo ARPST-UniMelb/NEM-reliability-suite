@@ -15,8 +15,8 @@ sys_sc1 = PRASNEM.create_pras_file(start_dt, end_dt, input_folder, timeseries_fo
 sys_sc2 = PRASNEM.create_pras_file(start_dt, end_dt, input_folder, timeseries_folder; output_folder=output_folder, regions_selected=collect(1:12), scenario = 2)
 sys_sc3 = PRASNEM.create_pras_file(start_dt, end_dt, input_folder, timeseries_folder; output_folder=output_folder, regions_selected=collect(1:12), scenario = 3)
 
-PRASNEM.run_pras_study(sys_sc1, 1000)
-PRASNEM.run_pras_study(sys_sc2, 1000)
-PRASNEM.run_pras_study(sys_sc3, 1000)
+PRASNEM.run_pras_study(sys_sc1; sample_number=1000)
+PRASNEM.run_pras_study(sys_sc2; sample_number=1000)
+PRASNEM.run_pras_study(sys_sc3; sample_number=1000)
 
 sf, = PRAS.assess(sys_sc1,PRAS.SequentialMonteCarlo(samples=100),PRAS.Shortfall())
