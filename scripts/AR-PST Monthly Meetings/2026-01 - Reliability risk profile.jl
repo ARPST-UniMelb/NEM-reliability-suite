@@ -36,9 +36,6 @@ Niterations = round(Int, nsamples / 100)
 
 # ==========================  Create the PRAS system ==========================
 
-start_dt = DateTime("$(target_year)-01-01 00:00:00", dateformat"yyyy-mm-dd HH:MM:SS")
-end_dt = DateTime("$(target_year)-12-31 23:00:00", dateformat"yyyy-mm-dd HH:MM:SS")
-
 input_folder = joinpath(input_folder_base, "out-ref$(reference_year)-poe$(poe)", "csv")
 output_folder = joinpath(output_folder_base, "out-ref$(reference_year)-poe$(poe)")
 timeseries_folder = "schedule-$(target_year)"
@@ -60,14 +57,14 @@ sys_no_stor.demandresponses.borrow_capacity .= 0.0
 
 # ==========================  Approach 2: AEMO energy capacity derating ========================== 
 sys_stor_derated = deepcopy(sys)
-sys_stor_derated = SchedNEM.updateEnergyDerating(sys_stor_derated)
+sys_stor_derated = PRASNEM.updateEnergyDerating(sys_stor_derated)
 
 # ==========================  Approach 3: Compare with expecation dispatch ========================== 
 println("Calculating the storage dispatch with SchedNEM for reference year $(reference_year)...")
 m = SchedNEM.build_operation_model(sys; optimisation_window=48, move_forward=24, input_folder=input_folder, optimiser=Gurobi.Optimizer())
 res = SchedNEM.run_operation_model(m, sys; output_folder_schedule=output_folder)
 sys_stor_fixed = deepcopy(sys)
-sys_stor_fixed = SchedNEM.updateMarketExpectationDispatch(sys_stor_fixed, res; include_genstorage=false)
+sys_stor_fixed = PRASNEM.updateExpectationDispatch(sys_stor_fixed, res; include_genstorage=false)
 
 # ==========================  Running the adequacy assessments ==========================
 println("Running adequacy assessment for system without storage for reference year $(reference_year)...")
@@ -120,17 +117,17 @@ df_expectation_all = DataFrame()
 for i in 1:1:Niterations
     df_greedy = CSV.read("$(data_folder_base)/$(target_year)_greedy_ref$(reference_year)_poe$(poe)_$i.csv", DataFrame)
     df_greedy[!,:reference_year] .= reference_year
-    df_greedy[!,:sample] .= df_greedy.sample .+ round(Int, year_factor * nsamples .+ (i .- 1) .* nsamples ./ Niterations)
+    df_greedy[!,:sample] .= df_greedy.sample .+ round(Int, (i .- 1) .* nsamples ./ Niterations)
     append!(df_greedy_all, df_greedy)
 
     df_derated = CSV.read("$(data_folder_base)/$(target_year)_derated_ref$(reference_year)_poe$(poe)_$i.csv", DataFrame)
     df_derated[!,:reference_year] .= reference_year
-    df_derated[!,:sample] .= df_derated.sample .+ round(Int, year_factor * nsamples .+ (i .- 1) .* nsamples ./ Niterations)
+    df_derated[!,:sample] .= df_derated.sample .+ round(Int, (i .- 1) .* nsamples ./ Niterations)
     append!(df_derated_all, df_derated)
 
     df_expectation = CSV.read("$(data_folder_base)/$(target_year)_expectation_ref$(reference_year)_poe$(poe)_$i.csv", DataFrame)
     df_expectation[!,:reference_year] .= reference_year
-    df_expectation[!,:sample] .= df_expectation.sample .+ round(Int, year_factor * nsamples .+ (i .- 1) .* nsamples ./ Niterations)
+    df_expectation[!,:sample] .= df_expectation.sample .+ round(Int, (i .- 1) .* nsamples ./ Niterations)
     append!(df_expectation_all, df_expectation)
 end
 
@@ -144,7 +141,7 @@ scatter(df_greedy_all.sum, df_greedy_all.storages_energy_start_critical_period,
 ylims!(0.0,1.1)
 xlims!(1, maximum(vcat(df_greedy_all.sum, df_derated_all.sum, df_expectation_all.sum)) + 10)
 plot!(xscale=:log10, yscale=:identity)
-savefig("./scripts/AR-PST Monthly Meetings/figures/2026-01_storage_operation_scatter1.png")
+#savefig("./scripts/AR-PST Monthly Meetings/figures/2026-01_storage_operation_scatter1.png")
 
 scatter(df_greedy_all.sum, df_greedy_all.storages_energy_start_critical_period,
     ylabel="Total storage energy before event\n[Normalised]", xlabel="Unserved energy per event [MWh]",
@@ -156,7 +153,7 @@ scatter!(df_derated_all.sum, df_derated_all.storages_energy_start_critical_perio
 ylims!(0.0,1.1)
 xlims!(1, maximum(vcat(df_greedy_all.sum, df_derated_all.sum, df_expectation_all.sum)) + 10)
 plot!(xscale=:log10, yscale=:identity)
-savefig("./scripts/AR-PST Monthly Meetings/figures/2026-01_storage_operation_scatter2.png")
+#savefig("./scripts/AR-PST Monthly Meetings/figures/2026-01_storage_operation_scatter2.png")
 
 
 scatter(df_greedy_all.sum, df_greedy_all.storages_energy_start_critical_period,
@@ -172,27 +169,26 @@ scatter!(df_expectation_all.sum, df_expectation_all.storages_energy_start_critic
 ylims!(0.0,1.1)
 xlims!(1, maximum(vcat(df_greedy_all.sum, df_derated_all.sum, df_expectation_all.sum)) + 10)
 plot!(xscale=:log10, yscale=:identity)
-savefig("./scripts/AR-PST Monthly Meetings/figures/2026-01_storage_operation_scatter3.png")
+#savefig("./scripts/AR-PST Monthly Meetings/figures/2026-01_storage_operation_scatter3.png")
 
 
 #%%
 
 # Calculate the metrics
 nsamples = Niterations * 100
-all_use_samples = zeros(3,nsamples*length(reference_years))
-all_lolh_samples = zeros(3,nsamples*length(reference_years))
-for year in 1:length(reference_years)
-    for i in (year*nsamples - nsamples + 1):(year*nsamples)
-        all_use_samples[1,i] = sum(df_greedy_all.sum[df_greedy_all.sample .== i])
-        all_use_samples[2,i] = sum(df_derated_all.sum[df_derated_all.sample .== i])
-        all_use_samples[3,i] = sum(df_expectation_all.sum[df_expectation_all.sample .== i])
-        all_lolh_samples[1,i] = sum(df_greedy_all.length[df_greedy_all.sample .== i])
-        all_lolh_samples[2,i] = sum(df_derated_all.length[df_derated_all.sample .== i])
-        all_lolh_samples[3,i] = sum(df_expectation_all.length[df_expectation_all.sample .== i])
-    end
-    println(" ==== Reference year: ", reference_years[year], " ==== ")
-    println("Greedy: ", mean(all_use_samples[1, (year*nsamples - nsamples + 1):(year*nsamples)]), " | Derated: ", mean(all_use_samples[2, (year*nsamples - nsamples + 1):(year*nsamples)]), "| Expectation: ", mean(all_use_samples[3, (year*nsamples - nsamples + 1):(year*nsamples)]))
+all_use_samples = zeros(3,nsamples)
+all_lolh_samples = zeros(3,nsamples)
+
+for i in 1:nsamples
+    all_use_samples[1,i] = sum(df_greedy_all.sum[df_greedy_all.sample .== i])
+    all_use_samples[2,i] = sum(df_derated_all.sum[df_derated_all.sample .== i])
+    all_use_samples[3,i] = sum(df_expectation_all.sum[df_expectation_all.sample .== i])
+    all_lolh_samples[1,i] = sum(df_greedy_all.length[df_greedy_all.sample .== i])
+    all_lolh_samples[2,i] = sum(df_derated_all.length[df_derated_all.sample .== i])
+    all_lolh_samples[3,i] = sum(df_expectation_all.length[df_expectation_all.sample .== i])
 end
+
+println("Greedy: ", mean(all_use_samples[1, :]), " | Derated: ", mean(all_use_samples[2, :]), " | Expectation: ", mean(all_use_samples[3, :]))
 
 
 #%%
@@ -205,7 +201,7 @@ EUE_expectation = mean(all_use_samples[3, subset_idxs])
 bar(["Greedy", "Derated", "Market-Based"], [EUE_greedy, EUE_derated, EUE_expectation],
     ylabel="EUE [MWh]", xlabel="",
     legend=false, color=[1, 2, 3], dpi=300, size=(400,300))
-savefig("./scripts/AR-PST Monthly Meetings/figures/2026-01_storage_operation_eue.png")
+#savefig("./scripts/AR-PST Monthly Meetings/figures/2026-01_storage_operation_eue.png")
 
 LOLH_greedy = mean(all_lolh_samples[1, subset_idxs])
 LOLH_derated = mean(all_lolh_samples[2, subset_idxs])
@@ -214,7 +210,7 @@ LOLH_expectation = mean(all_lolh_samples[3, subset_idxs])
 bar(["Greedy", "Derated", "Market-Based"], [LOLH_greedy, LOLH_derated, LOLH_expectation],
     ylabel="LOLH [h/year]", xlabel="",
     legend=false, color=[1, 2, 3], dpi=300, size=(400,300))
-savefig("./scripts/AR-PST Monthly Meetings/figures/2026-01_storage_operation_lolh.png")
+#savefig("./scripts/AR-PST Monthly Meetings/figures/2026-01_storage_operation_lolh.png")
 
 VaR_greedy = quantile(all_use_samples[1, subset_idxs], 0.95)
 VaR_derated = quantile(all_use_samples[2, subset_idxs], 0.95)
@@ -231,4 +227,4 @@ CVaR_expectation = mean(all_use_samples[3, subset_idxs][idxs_var_expectation])
 bar(["Greedy", "Derated", "Market-Based"], [CVaR_greedy, CVaR_derated, CVaR_expectation],
     ylabel="CVaR-95% [MWh]", xlabel="",
     legend=false, color=[1, 2, 3], dpi=300, size=(400,300))
-savefig("./scripts/AR-PST Monthly Meetings/figures/2026-01_storage_operation_cvar.png")
+#savefig("./scripts/AR-PST Monthly Meetings/figures/2026-01_storage_operation_cvar.png")
