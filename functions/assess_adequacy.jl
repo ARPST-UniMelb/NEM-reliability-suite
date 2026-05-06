@@ -23,6 +23,9 @@ function assess_adequacy(target_year::Int=2030,
         base_path::String="Z://";
         # Optional parameters that allow for custom configuration
         genOpDetails::NamedTuple = (uc=true, ramping=true, binary=false),
+        case_name::String="base",
+        case_name_buildout::String="base",
+        regions_selected::Vector{Int} = collect(1:12),
         DER_parameters = PRASNEM.get_DER_parameters(),
         add_lines = PRASNEM.get_added_lines_per_year(),
         hydro_parameters = PRASNEM.get_hydro_parameters(),
@@ -46,11 +49,23 @@ function assess_adequacy(target_year::Int=2030,
         @warn "The sample_number_per_run parameter is set to $sample_number_per_run. Please ensure that the adequacy assessment workflow has been run with this same value to generate the required results files, otherwise this function will not be able to read the results correctly."
     end
 
+    # Make sure that if any default parameters are changed, the case_name parameter is set to avoid overwriting results files and to ensure that results can be found when reading the results in again
+    if (regions_selected != collect(1:12)) || (DER_parameters != PRASNEM.get_DER_parameters()) || (add_lines != PRASNEM.get_added_lines_per_year()) || (hydro_parameters != PRASNEM.get_hydro_parameters()) || (optimisation_window != 48) || (move_forward != 24) || (genOpDetails != (uc=true, ramping=true, binary=false)) || (sample_number_per_run != 100) || (default_horizon != 4) || (min_time_after_event != 4)
+        if case_name == "base"
+            case_name = "_temp_case_$(round(Int, rand()*1000))"
+            @warn "You have changed default parameters without providing a custom case name!\nTEMPORARY NAME: $case_name"
+        else
+            @info "Running adequacy assessment with custom parameters under case name: $case_name"
+        end
+    end
+
+    @info "Running adequacy assessment with case $case_name:\nBuildout: $case_name_buildout\nPlanning year $target_year\nWeather reference trace: $reference_trace\nPOE: $poe\nISP scenario: $scenario\n Samples: $samples"
+
     # File paths
-    base_folder_pisp = joinpath(base_path, "pisp-datasets")
-    base_folder_pras = joinpath(base_path, "pras-files")
-    base_folder_schedules = joinpath(base_path, "schedules")
-    base_folder_results = joinpath(base_path, "results")
+    base_folder_pisp = joinpath(base_path, "pisp-datasets", case_name_buildout)
+    base_folder_pras = joinpath(base_path, "pras-files", case_name)
+    base_folder_schedules = joinpath(base_path, "schedules", case_name)
+    base_folder_results = joinpath(base_path, "results", case_name)
 
     pisp_input_folder = joinpath(base_folder_pisp, "out-ref$(reference_trace)-poe$(poe)", "csv")
     pras_folder = joinpath(base_folder_pras, "out-ref$(reference_trace)-poe$(poe)",)
@@ -72,6 +87,7 @@ function assess_adequacy(target_year::Int=2030,
 
     sys = PRASNEM.create_pras_system(start_dt, end_dt, pisp_input_folder, timeseries_folder; 
                                 line_alias_included=add_lines[target_year], output_folder=pras_folder,
+                                regions_selected=regions_selected,
                                 hydro_parameters=hydro_parameters,
                                 DER_parameters=DER_parameters, scenario=scenario)
 
