@@ -49,7 +49,7 @@ function read_results(target_year::Int,
    poe_weight_factor = reshape([poe_weights[findfirst(==(poe), [10, 50, 90])] for poe in poe_order], 1, 1, :)
 
    r_total = (eue=mean(eens .* poe_weight_factor), lolh=mean(lolh .* poe_weight_factor), cvar_ens=mean((ens .* poe_weight_factor)[ens .>= VaR]))
-   @info("Results for target year $target_year, reference years $(join(reference_years, ", ")), poe $poe, case \"$case\", samples $samples:\n EUE: $(round(r_total.eue, sigdigits=2)) MWh/year\n LOLH: $(round(r_total.lolh, sigdigits=2)) hours/year\n CVaR: $(round(r_total.cvar_ens, sigdigits=2)) MWh/year")
+   #@info("Results for target year $target_year, reference years $(join(reference_years, ", ")), poe $poe, case \"$case\", samples $samples:\n EUE: $(round(r_total.eue, sigdigits=2)) MWh/year\n LOLH: $(round(r_total.lolh, sigdigits=2)) hours/year\n CVaR: $(round(r_total.cvar_ens, sigdigits=2)) MWh/year")
 
    return (eue=mean(eens .* poe_weight_factor, dims=[1,3])[:], lolh=mean(lolh .* poe_weight_factor, dims=[1,3])[:], var_ens=VaR, cvar_ens=[mean((ens[:,j,:] .* poe_weight_factor)[:,1,:][findall(ens[:,j,:] .>= VaR)]) for j in 1:length(reference_years)])
 end
