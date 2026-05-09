@@ -32,7 +32,8 @@ function assess_adequacy(target_year::Int=2030,
         solver::String = "HiGHS", # "HiGHS" or "Gurobi",
         sample_number_per_run::Int=100,
         default_horizon::Int=4, min_time_after_event::Int=4, 
-        optimisation_window::Int=48, move_forward::Int=24)
+        optimisation_window::Int=48, move_forward::Int=24,
+        rescale_caps = DataFrame(year=2025:5:2040, wind=[13.0,39.3,56.4,60.9], solar=[33.0,51.6,74.6,91.3]))
 
     # Run some checks on the input parameters
     if !(poe in [10, 50])
@@ -93,6 +94,18 @@ function assess_adequacy(target_year::Int=2030,
 
     # Approximating storage/genstorage outages by derating the available capacity by the FOR
     PRASNEM.updateStorageOutageDerating!(sys)
+
+    # Rescale the VRE capacity to match the AEMO capacity data
+    wind_idxs = findall(x -> x == "Wind", sys.generators.categories)
+    solar_idxs = findall(x -> x in ["LargePV", "RoofPV"], sys.generators.categories)
+    vre_en_before = sum(sys.generators.capacity[vcat(wind_idxs, solar_idxs),:])
+    total_wind_cap = sum(maximum(sys.generators.capacity[wind_idxs, :], dims=2)[:]) ./ 1e3
+    total_solar_cap = sum(maximum(sys.generators.capacity[solar_idxs, :], dims=2)[:]) ./ 1e3
+    sys.generators.capacity[wind_idxs, :] = round.(Int, sys.generators.capacity[wind_idxs, :] .* rescale_caps.wind[target_year .== rescale_caps.year][:] / total_wind_cap)
+    sys.generators.capacity[solar_idxs, :] = round.(Int, sys.generators.capacity[solar_idxs, :] .* rescale_caps.solar[target_year .== rescale_caps.year][:] / total_solar_cap)
+    vre_en_after = sum(sys.generators.capacity[vcat(wind_idxs, solar_idxs),:])
+    vre_cap_after = sum(maximum(sys.generators.capacity[vcat(wind_idxs, solar_idxs), :], dims=2)[:]) ./ 1e3
+    @info "Total VRE capacity before rescaling: $(round(total_wind_cap+total_solar_cap, digits=2)) GW (cf: $(round(vre_en_before / (vre_cap_after * 1e3 * length(sys.timestamps)), digits=3)))\nTotal VRE capacity after rescaling: $(round(vre_cap_after, digits=2)) GW (cf: $(round(vre_en_after / (vre_cap_after * 1e3 * length(sys.timestamps)), digits=3)))"
 
     # ==========================================================================
     # 2. Run the scheduling of the system
