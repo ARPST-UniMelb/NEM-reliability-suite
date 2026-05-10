@@ -105,7 +105,7 @@ function assess_adequacy(target_year::Int=2030,
     sys.generators.capacity[solar_idxs, :] = round.(Int, sys.generators.capacity[solar_idxs, :] .* rescale_caps.solar[target_year .== rescale_caps.year][:] / total_solar_cap)
     vre_en_after = sum(sys.generators.capacity[vcat(wind_idxs, solar_idxs),:])
     vre_cap_after = sum(maximum(sys.generators.capacity[vcat(wind_idxs, solar_idxs), :], dims=2)[:]) ./ 1e3
-    @info "Total VRE capacity before rescaling: $(round(total_wind_cap+total_solar_cap, digits=2)) GW (cf: $(round(vre_en_before / (vre_cap_after * 1e3 * length(sys.timestamps)), digits=3)))\nTotal VRE capacity after rescaling: $(round(vre_cap_after, digits=2)) GW (cf: $(round(vre_en_after / (vre_cap_after * 1e3 * length(sys.timestamps)), digits=3)))"
+    @info "Total VRE capacity before rescaling: $(round(total_wind_cap+total_solar_cap, digits=2)) GW (cf: $(round(vre_en_before / ((total_wind_cap+total_solar_cap) * 1e3 * length(sys.timestamps)), digits=3)))\nTotal VRE capacity after rescaling: $(round(vre_cap_after, digits=2)) GW (cf: $(round(vre_en_after / (vre_cap_after * 1e3 * length(sys.timestamps)), digits=3)))"
 
     # ==========================================================================
     # 2. Run the scheduling of the system
