@@ -32,7 +32,8 @@ function assess_adequacy(target_year::Int=2030,
         solver::String = "HiGHS", # "HiGHS" or "Gurobi",
         sample_number_per_run::Int=100,
         default_horizon::Int=4, min_time_after_event::Int=4, 
-        optimisation_window::Int=48, move_forward::Int=24)
+        optimisation_window::Int=48, move_forward::Int=24,
+        resilience_event::String="")
 
     # Run some checks on the input parameters
     if !(poe in [10, 50])
@@ -59,7 +60,7 @@ function assess_adequacy(target_year::Int=2030,
         end
     end
 
-    @info "Running adequacy assessment with case $case_name:\nBuildout: $case_name_buildout\nPlanning year $target_year\nWeather reference trace: $reference_trace\nPOE: $poe\nISP scenario: $scenario\n Samples: $samples"
+    @info "Running adequacy assessment with case $case_name:\nBuildout: $case_name_buildout\nPlanning year $target_year\nWeather reference trace: $reference_trace\nPOE: $poe\nISP scenario: $scenario\n Samples: $samples\nResilience event: $resilience_event"
 
     # File paths
     base_folder_pisp = joinpath(base_path, "pisp-datasets", case_name_buildout)
@@ -68,10 +69,15 @@ function assess_adequacy(target_year::Int=2030,
     base_folder_results = joinpath(base_path, "results", case_name)
 
     pisp_input_folder = joinpath(base_folder_pisp, "out-ref$(reference_trace)-poe$(poe)", "csv")
-    pras_folder = joinpath(base_folder_pras, "out-ref$(reference_trace)-poe$(poe)",)
-    schedules_folder = joinpath(base_folder_schedules, "out-ref$(reference_trace)-poe$(poe)", "ty$(target_year)")
-    results_folder = joinpath(base_folder_results, "out-ref$(reference_trace)-poe$(poe)", "ty$(target_year)")
     timeseries_folder = "schedule-$(target_year)"
+    pras_folder = joinpath(base_folder_pras, "out-ref$(reference_trace)-poe$(poe)",)
+    if resilience_event != ""
+        schedules_folder = joinpath(base_folder_schedules, "out-ref$(reference_trace)-poe$(poe)-$(resilience_event)", "ty$(target_year)")
+        results_folder = joinpath(base_folder_results, "out-ref$(reference_trace)-poe$(poe)-$(resilience_event)", "ty$(target_year)")
+    else
+        schedules_folder = joinpath(base_folder_schedules, "out-ref$(reference_trace)-poe$(poe)", "ty$(target_year)")
+        results_folder = joinpath(base_folder_results, "out-ref$(reference_trace)-poe$(poe)", "ty$(target_year)")
+    end
 
     println(Threads.nthreads(), " threads available for parallel processing.")
 
@@ -90,6 +96,12 @@ function assess_adequacy(target_year::Int=2030,
                                 regions_selected=regions_selected,
                                 hydro_parameters=hydro_parameters,
                                 DER_parameters=DER_parameters, scenario=scenario)
+
+    if resilience_event != ""
+        resilience_event_folder = joinpath(base_path, "resilience", resilience_event)
+        PRASNEM.applyGenHeatwaveDerating!(sys, resilience_event_folder)
+        PRASNEM.applyLineHeatwaveDerating!(sys, resilience_event_folder)
+    end
 
     # Approximating storage/genstorage outages by derating the available capacity by the FOR
     PRASNEM.updateStorageOutageDerating!(sys)
