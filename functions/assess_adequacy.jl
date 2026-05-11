@@ -32,8 +32,7 @@ function assess_adequacy(target_year::Int=2030,
         solver::String = "HiGHS", # "HiGHS" or "Gurobi",
         sample_number_per_run::Int=100,
         default_horizon::Int=4, min_time_after_event::Int=4, 
-        optimisation_window::Int=48, move_forward::Int=24,
-        rescale_caps = DataFrame(year=2025:5:2040, wind=[13.0,39.3,56.4,60.9], solar=[33.0,51.6,74.6,91.3]))
+        optimisation_window::Int=48, move_forward::Int=24)
 
     # Run some checks on the input parameters
     if !(poe in [10, 50])
