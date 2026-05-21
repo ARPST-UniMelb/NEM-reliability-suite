@@ -43,3 +43,14 @@ _personal scripts/*
 *.zip
 *.xml
 *.pras
+*.bin
+*.h5
+*.log
+*.json
+*.sha256
+
+# Commit small data for tests
+!data/pisp-datasets/out-ref2017-poe10/arrow/*.arrow
+!data/pisp-datasets/out-ref2017-poe10/arrow/schedule-09022040-11022040/*.arrow
+!data/pisp-datasets/out-ref2017-poe10/csv/*.csv
+!data/pisp-datasets/out-ref2017-poe10/csv/schedule-09022040-11022040/*.csv
