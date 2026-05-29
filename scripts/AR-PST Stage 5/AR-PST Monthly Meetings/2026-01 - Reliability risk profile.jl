@@ -22,7 +22,7 @@ target_year = 2030
 poe = 10
 reference_year = 4006 #2011:1:2023
 
-add_lines = PRASNEM.get_added_lines_per_year(2) # Get actionable and committed lines (Scenario 2 - Step Change)
+add_lines = PRASNEM.get_added_lines_per_year() # Get actionable and committed lines (Scenario 2 - Step Change)
 
 # File paths (adjust as necessary)
 input_folder_base = joinpath("F:","PhD Data", "pisp-datasets")
