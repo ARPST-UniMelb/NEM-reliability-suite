@@ -52,7 +52,7 @@ function assess_adequacy(target_year::Int=2030,
 
     # Make sure that if any default parameters are changed, the case_name parameter is set to avoid overwriting results files and to ensure that results can be found when reading the results in again
     if (regions_selected != collect(1:12)) || (DER_parameters != PRASNEM.get_DER_parameters()) || (add_lines != PRASNEM.get_added_lines_per_year()) || (hydro_parameters != PRASNEM.get_hydro_parameters()) || (optimisation_window != 48) || (move_forward != 24) || (genOpDetails != (uc=true, ramping=true, binary=false)) || (sample_number_per_run != 100) || (default_horizon != 4) || (min_time_after_event != 4)
-        if case_name == "base"
+        if (case_name == "base") && (resilience_event == "")
             case_name = "_temp_case_$(round(Int, rand()*1000))"
             @warn "You have changed default parameters without providing a custom case name!\nTEMPORARY NAME: $case_name"
         else
@@ -128,7 +128,7 @@ function assess_adequacy(target_year::Int=2030,
     # ==========================================================================
     # Create a copy of the system to update with the expected dispatch and unit commitment for the adequacy assessment
     sys_assessment = deepcopy(sys)
-    PRASNEM.updateDERExpectationDispatch!(sys_assessment, res)
+    PRASNEM.updateDRExpectationDispatch!(sys_assessment, res)
     PRASNEM.updateStorageExpectationDispatch!(sys_assessment, res)
     PRASNEM.updateUnitCommitment!(sys_assessment, res)
 
