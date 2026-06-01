@@ -1,4 +1,4 @@
-id_lin,name,alias,tech,capacity,id_bus_from,id_bus_to,investment,active,r,x,tmin,tmax,fullout,mttrfull,voltage,segments,latitude,longitude,length,n,contingency
+id_lin,name,alias,tech,capacity,id_bus_from,id_bus_to,investment,active,r,x,rvcap,fwcap,fullout,mttrfull,voltage,segments,latitude,longitude,length,n,contingency
 1,CQ->NQ,CQ->NQ,DC,1400.0,2,1,false,true,0.01,0.1,1400.0,1400.0,0.0,1.0,220.0,1,,,1.0,1,false
 2,CQ->GG,CQ->GG,DC,1100.0,2,3,false,true,0.01,0.1,1100.0,1050.0,0.0,1.0,220.0,1,,,1.0,1,false
 3,SQ->CQ,SQ->CQ,DC,2100.0,4,2,false,true,0.01,0.1,2100.0,1100.0,0.0,1.0,220.0,1,,,1.0,1,false
