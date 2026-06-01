@@ -15,7 +15,7 @@ Parameters:
 
 
 """
-function assess_adequacy(target_year::Int=2030,
+function assess_adequacy_resilience(target_year::Int=2030,
         reference_trace::Int=4006,
         poe::Int=10,
         samples::Int=100,
@@ -33,7 +33,8 @@ function assess_adequacy(target_year::Int=2030,
         sample_number_per_run::Int=100,
         default_horizon::Int=4, min_time_after_event::Int=4, 
         optimisation_window::Int=48, move_forward::Int=24,
-        resilience_event::String="")
+        resilience_event::String="",
+        saving_details=(:shortfall, :stor_energy, :drs_borrowing))
 
     # Run some checks on the input parameters
     if !(poe in [10, 50])
@@ -52,7 +53,7 @@ function assess_adequacy(target_year::Int=2030,
 
     # Make sure that if any default parameters are changed, the case_name parameter is set to avoid overwriting results files and to ensure that results can be found when reading the results in again
     if (regions_selected != collect(1:12)) || (DER_parameters != PRASNEM.get_DER_parameters()) || (add_lines != PRASNEM.get_added_lines_per_year()) || (hydro_parameters != PRASNEM.get_hydro_parameters()) || (optimisation_window != 48) || (move_forward != 24) || (genOpDetails != (uc=true, ramping=true, binary=false)) || (sample_number_per_run != 100) || (default_horizon != 4) || (min_time_after_event != 4)
-        if (case_name == "base") && (resilience_event == "")
+        if case_name == "base"
             case_name = "_temp_case_$(round(Int, rand()*1000))"
             @warn "You have changed default parameters without providing a custom case name!\nTEMPORARY NAME: $case_name"
         else
@@ -67,6 +68,7 @@ function assess_adequacy(target_year::Int=2030,
     base_folder_pras = joinpath(base_path, "pras-files", case_name)
     base_folder_schedules = joinpath(base_path, "schedules", case_name)
     base_folder_results = joinpath(base_path, "results", case_name)
+    base_folder_reoptimisation_results = joinpath(base_path, "reoptimisation-results", case_name)
 
     pisp_input_folder = joinpath(base_folder_pisp, "out-ref$(reference_trace)-poe$(poe)", "csv")
     timeseries_folder = "schedule-$(target_year)"
@@ -74,9 +76,11 @@ function assess_adequacy(target_year::Int=2030,
     if resilience_event != ""
         schedules_folder = joinpath(base_folder_schedules, "out-ref$(reference_trace)-poe$(poe)-$(resilience_event)", "ty$(target_year)")
         results_folder = joinpath(base_folder_results, "out-ref$(reference_trace)-poe$(poe)-$(resilience_event)", "ty$(target_year)")
+        reoptimisation_results_folder = joinpath(base_folder_reoptimisation_results, "out-ref$(reference_trace)-poe$(poe)-$(resilience_event)", "ty$(target_year)")
     else
         schedules_folder = joinpath(base_folder_schedules, "out-ref$(reference_trace)-poe$(poe)", "ty$(target_year)")
         results_folder = joinpath(base_folder_results, "out-ref$(reference_trace)-poe$(poe)", "ty$(target_year)")
+        reoptimisation_results_folder = joinpath(base_folder_reoptimisation_results, "out-ref$(reference_trace)-poe$(poe)", "ty$(target_year)")
     end
 
     println(Threads.nthreads(), " threads available for parallel processing.")
@@ -89,11 +93,11 @@ function assess_adequacy(target_year::Int=2030,
     # 1. Create PRAS files for the adequacy assessment
     # ==========================================================================
     start_dt = DateTime("$(target_year)-01-01 00:00:00", dateformat"yyyy-mm-dd HH:MM:SS")
-    end_dt = DateTime("$(target_year)-12-31 23:00:00", dateformat"yyyy-mm-dd HH:MM:SS")
+    end_dt = DateTime("$(target_year)-03-31 23:00:00", dateformat"yyyy-mm-dd HH:MM:SS")
 
     sys = PRASNEM.create_pras_system(start_dt, end_dt, pisp_input_folder, timeseries_folder; 
-                                line_alias_included=add_lines[target_year], output_folder=pras_folder,
-                                regions_selected=regions_selected,
+                                line_alias_included=add_lines[target_year],
+                                regions_selected=regions_selected, output_folder=pras_folder,
                                 hydro_parameters=hydro_parameters,
                                 DER_parameters=DER_parameters, scenario=scenario)
 
@@ -214,10 +218,16 @@ function assess_adequacy(target_year::Int=2030,
                 hydro_parameters=hydro_parameters,
                 optimisation_window=optimisation_window, move_forward=move_forward, 
                 optimiser_name=solver, input_folder=pisp_input_folder,
-                genOpDetails=genOpDetails);
+                genOpDetails=genOpDetails,
+                saving_details=saving_details);
 
-        SchedNEM.saveSfMatrix(sf_new, filename_output)
-        eens_reoptimised[i] = sum(sf_new) ./ sample_number_per_run
+        if typeof(sf_new) == Array{Int, 3}
+            SchedNEM.saveSfMatrix(sf_new, filename_output)
+        else
+            SchedNEM.saveSfMatrix(sf_new.shortfall .+ res.shortfall, filename_output)
+            SchedNEM.save_schedule_change(sf_new, joinpath(reoptimisation_results_folder, "schedule_changes_s$(scenario)_batch$(i).csv"))
+        end
+        eens_reoptimised[i] = sum(sf_new.shortfall) ./ sample_number_per_run
     end
     @info "Finished system response analysis."
 

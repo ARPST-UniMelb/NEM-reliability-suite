@@ -35,6 +35,7 @@ trash/
 
 # Files used for testing and debugging
 _personal scripts/*
+**/_PERSONAL/*
 
 # Data file extensions
 *.xlsx
@@ -43,6 +44,7 @@ _personal scripts/*
 *.zip
 *.xml
 *.pras
+*.png
 *.bin
 *.h5
 *.log
