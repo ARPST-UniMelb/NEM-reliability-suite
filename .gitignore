@@ -36,6 +36,7 @@ trash/
 # Files used for testing and debugging
 _personal scripts/*
 **/_PERSONAL/*
+**/.ipynb_checkpoints/*
 
 # Data file extensions
 *.xlsx
