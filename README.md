@@ -2,7 +2,9 @@
 
 Data and reliability studies for the Australian National Electricity Market (NEM).
 
-This repository contains some sample data, as well as tutorials and scripts to perform reliability studies with [PISP.jl](https://github.com/ARPST-UniMelb/PISP.jl), [PRASNEM.jl](https://github.com/ARPST-UniMelb/PRASNEM.jl) and [SiennaNEM.jl](https://github.com/ARPST-UniMelb/SiennaNEM.jl).
+This repository contains some sample data, as well as tutorials and scripts to perform reliability studies with [PISP.jl](https://github.com/ARPST-UniMelb/PISP.jl), [PRASNEM.jl](https://github.com/ARPST-UniMelb/PRASNEM.jl), [SchedNEM.jl](https://github.com/ARPST-UniMelb/SchedNEM.jl) and [SiennaNEM.jl](https://github.com/ARPST-UniMelb/SiennaNEM.jl).
+
+
 
 ## Getting started
 
@@ -107,6 +109,8 @@ results     = SiennaNEM.run_decision_model_loop(
 )
 ```
 
+An interactive example with `PRASNEM.jl` and `SchedNEM.jl` can be found in the interactive Jupyter Notebook `tutorials/NEM-reliability-suite - Example.ipynb`.
+
 ## Optional parameters
 
 ### PISP.build_ISP24_datasets()
@@ -140,17 +144,5 @@ There are multiple optional parameters that can be adjusted when creating the pr
 | investment_filer    | [0]           | Array indicating which assets to include based on investment status (if investment candidate or not)                               |
 | active_filter       | [1]           | Array indicating which assets to include based on their active status                                                              |
 | line_alias_included | []            | Array of line aliases to include even if they would be filtered out due to investment/active status                                |
-| weather_folder      | ""            | Folder with weather data timeseries to use (no capacities are read from here, only normalised timeseries for demand, VRE, and DSP). Inflows are considered in full (not normalised).|
-
-## Advanced results
-
-The source code to obtain these results can be found in the folder ``/tutorials``.
-
-**Distribution of USE events of the NEM in 2028**
-![](./scripts/AR-PST%20Interim%20Presentation/figures/PRASNEM_2_USE_Event_Size_Histogram_2028.png)
-
-**ISP 2024 Step Change Scenario Adequacy Levels**
-![](./scripts/AR-PST%20Interim%20Presentation/figures/PRASNEM_3_ISP_Step_Change_adequacy.png)
-
-**Adequacy in 2030 with/without selected transmission expansion**
-![](./scripts/AR-PST%20Interim%20Presentation/figures/PRASNEM_4_maps.png)
+| DER_parameters      | `PRASNEM.get_DER_parameters()` | Dict with DER scenario, as defined in `PRASNEM.get_DER_parameters()` function.                                    |
+| hydro_parameters    | `PRASNEM.get_hydro_parameters()` | Dict with hydro parameters (e.g. initial SOC of reservoirs, reservoir sizes, efficiencies).                     |
