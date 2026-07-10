@@ -57,3 +57,6 @@ _personal scripts/*
 !data/pisp-datasets/out-ref2017-poe10/arrow/schedule-09022040-11022040/*.arrow
 !data/pisp-datasets/out-ref2017-poe10/csv/*.csv
 !data/pisp-datasets/out-ref2017-poe10/csv/schedule-09022040-11022040/*.csv
+
+# Commit the buildout definition used by the Final Report tutorial and scripts
+!scripts/AR-PST Stage 5/Final Report/DATA MANAGEMENT/base_buildout.xlsx

@@ -21,7 +21,7 @@ PISP = {rev = "main", url = "https://github.com/ARPST-UniMelb/PISP.jl"}
 PRASCore = {rev = "main", subdir = "PRASCore.jl", url = "https://github.com/ARPST-UniMelb/PRAS"}
 PRASNEM = {rev = "main", url = "https://github.com/ARPST-UniMelb/PRASNEM.jl"}
 SchedNEM = {rev = "main", url = "https://github.com/ARPST-UniMelb/SchedNEM.jl"}
-SiennaNEM = {rev = "v0.0.8", url = "https://github.com/ARPST-UniMelb/SiennaNEM.jl"}
+SiennaNEM = {rev = "main", url = "https://github.com/ARPST-UniMelb/SiennaNEM.jl"}
 
 [compat]
 julia = "1.11"

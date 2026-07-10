@@ -4,7 +4,8 @@ Data and reliability studies for the Australian National Electricity Market (NEM
 
 This repository contains some sample data, as well as tutorials and scripts to perform reliability studies with [PISP.jl](https://github.com/ARPST-UniMelb/PISP.jl), [PRASNEM.jl](https://github.com/ARPST-UniMelb/PRASNEM.jl), [SchedNEM.jl](https://github.com/ARPST-UniMelb/SchedNEM.jl) and [SiennaNEM.jl](https://github.com/ARPST-UniMelb/SiennaNEM.jl).
 
-
+> [!CAUTION]
+> The current version is functional and has been extensively tested; however, bugs or other issues may still arise. We would greatly appreciate any feedback or bug reports submitted via https://github.com/ARPST-UniMelb/NEM-reliability-suite/issues 
 
 ## Getting started
 
@@ -20,8 +21,9 @@ Then start a Julia REPL within the folder and activate and instantiate the local
 using Pkg
 Pkg.activate(".")
 Pkg.instantiate()
-Pkg.update()
 ```
+
+All code snippets below assume the REPL is running in the repository root folder.
 
 Now we can start collecting the public ISP data with `PISP`. Note that this requires an active internet connection and may take some time.
 
@@ -34,11 +36,11 @@ poe             = 10 # Probability of exceedance (POE) for demand
 target_years    = [2030, 2031]
 
 PISP.build_ISP24_datasets(
-    downloadpath = joinpath(@__DIR__, "..", "data", "pisp-downloads"),
+    downloadpath = joinpath(pwd(), "data", "pisp-downloads"),
     poe          = poe,
     reftrace     = reference_trace,
     years        = target_years,
-    output_root  = joinpath(@__DIR__, "..", "data", "pisp-datasets"),
+    output_root  = joinpath(pwd(), "data", "pisp-datasets"),
     write_csv    = true,
     write_arrow  = true,  # using arrow will make SiennaNEM faster
     scenarios    = [1,2,3]
@@ -56,16 +58,16 @@ tyear             = target_years[1]
 scenario          = 2
 start_dt          = DateTime("$tyear-01-01 00:00:00", dateformat"yyyy-mm-dd HH:MM:SS")
 end_dt            = DateTime("$tyear-12-31 23:00:00", dateformat"yyyy-mm-dd HH:MM:SS")
-input_folder      = joinpath(@__DIR__, "..", "data", "pisp-datasets","out-ref$reference_trace-poe$poe", "csv")
-timeseries_folder = joinpath(input_folder, "schedule-$tyear")
-output_folder     = joinpath(@__DIR__, "..", "data", "pras-files")
+input_folder      = joinpath(pwd(), "data", "pisp-datasets","out-ref$reference_trace-poe$poe", "csv")
+timeseries_folder = "schedule-$tyear" # subfolder of input_folder with the timeseries data
+output_folder     = joinpath(pwd(), "data", "pras-files")
 sys_pras          = PRASNEM.create_pras_system(start_dt, end_dt, input_folder, timeseries_folder; output_folder=output_folder, scenario=scenario) # More optional parameters available (see below)
 
 # Run adequacy study using PRAS
 shortfall = PRASNEM.run_pras_study(sys_pras);
 ```
 
-If more advanced adequacy studies are desired, using PRAS directly is advised. See examples in the folder `\tutorials`.
+If more advanced adequacy studies are desired, using PRAS directly is advised. See examples in the folder `tutorials/`.
 
 To understand the system operation in detail, we utilise `SiennaNEM` to run system scheduling.
 
@@ -79,11 +81,11 @@ using HiGHS
 
 horizon                  = Hour(24)
 interval                 = Hour(24)
-simulation_output_folder = joinpath(@__DIR__, "..", "data", "sienna-files")
-simulation_name          = "ref$reference_trace-poe$poe-tyear$tyear-s$scenario"
+simulation_output_folder = joinpath(pwd(), "data", "sienna-files")
+simulation_name          = "ref$(reference_trace)-poe$(poe)-tyear$(tyear)-s$(scenario)"
 simulation_steps         = 2  # number of rolling horizon steps
 file_format              = "arrow"
-input_folder_arrow       = joinpath(@__DIR__, "..", "data", "pisp-datasets","out-ref$reference_trace-poe$poe", file_format)
+input_folder_arrow       = joinpath(pwd(), "data", "pisp-datasets","out-ref$reference_trace-poe$poe", file_format)
 timeseries_folder_arrow  = joinpath(input_folder_arrow, "schedule-$tyear")
 
 data       = SiennaNEM.get_data(
@@ -98,7 +100,7 @@ SiennaNEM.add_ts!(
 )
 
 template_uc = SiennaNEM.build_problem_base_uc()
-results     = SiennaNEM.run_decision_model_loop(
+sim         = SiennaNEM.run_simulation(
     template_uc, sys_sienna;
     simulation_folder     = simulation_output_folder,
     simulation_name       = simulation_name,
@@ -107,9 +109,10 @@ results     = SiennaNEM.run_decision_model_loop(
         optimizer=optimizer_with_attributes(HiGHS.Optimizer, "mip_rel_gap" => 0.01),
     ),
 )
+results = SimulationResults(sim)
 ```
 
-An interactive example with `PRASNEM.jl` and `SchedNEM.jl` can be found in the interactive Jupyter Notebook `tutorials/NEM-reliability-suite - Example.ipynb`.
+An interactive example with `PRASNEM.jl` and `SchedNEM.jl` can be found in the interactive Jupyter Notebook `tutorials/NEM-reliability-suite - Example.ipynb`. A tutorial for the full adequacy-assessment workflow used in the AR-PST final report is in `tutorials/AR-PST Final Report - Tutorial.ipynb`.
 
 ## Optional parameters
 
@@ -122,7 +125,7 @@ There are multiple parameters that can be adjusted when generating the dataset f
 |downloadpath|"../../data-download"| Path where all files from AEMO's website will be downloaded and extracted
 |download_from_AEMO|true| Whether to download files from AEMO's website
 |poe|10| Probability of exceedance (POE) for demand: 10% or 50%
-|reftrace|2011| Reference weather year trace: select among 2011 - 2023 or 4006 (trace for the ODP)
+|reftrace|4006| Reference weather year trace: select among 2011 - 2023 or 4006 (trace for the ODP)
 |years|[2025]| Calendar years for which to build the time-varying schedules: select among 2025 - 2050
 |output_name|"out"| Output folder name
 |output_root|nothing| Output folder root
@@ -138,10 +141,10 @@ There are multiple optional parameters that can be adjusted when creating the pr
 | ------------------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | output_folder       | ""            | Folder to save the PRAS file. If empty, the PRAS file is not saved.                                                                |
 | regions_selected    | collect(1:12) | Array of region IDs to include (needs to be in ascending order). Empty array for copperplate model.                                |
-| scenario            | 2             | ISP scenario to use (1: progressive change, 2: step change, 3: green hydrogen exports)                                             |
+| scenario            | 2             | ISP scenario to use (1: "Progressive Change", 2: "Step Change", 3: "Green Energy Exports")                                        |
 | gentech_excluded    | []            | Array of generator technologies to exclude (can be fuel or technology, e.g. "Coal", "RoofPV", ...)                                 |
 | alias_excluded      | []            | Array of generator/storage/DER aliases to exclude (e.g. "GSTONE1")                                                                 |
-| investment_filer    | [0]           | Array indicating which assets to include based on investment status (if investment candidate or not)                               |
+| investment_filter   | [0]           | Array indicating which assets to include based on investment status (if investment candidate or not)                               |
 | active_filter       | [1]           | Array indicating which assets to include based on their active status                                                              |
 | line_alias_included | []            | Array of line aliases to include even if they would be filtered out due to investment/active status                                |
 | DER_parameters      | `PRASNEM.get_DER_parameters()` | Dict with DER scenario, as defined in `PRASNEM.get_DER_parameters()` function.                                    |
