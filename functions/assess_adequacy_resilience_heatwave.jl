@@ -33,8 +33,7 @@ function assess_adequacy_resilience(target_year::Int=2030,
         sample_number_per_run::Int=100,
         default_horizon::Int=4, min_time_after_event::Int=4, 
         optimisation_window::Int=48, move_forward::Int=24,
-        resilience_event::String="",
-        saving_details=(:shortfall, :stor_energy, :drs_borrowing))
+        resilience_event::String="")
 
     # Run some checks on the input parameters
     if !(poe in [10, 50])
@@ -68,7 +67,6 @@ function assess_adequacy_resilience(target_year::Int=2030,
     base_folder_pras = joinpath(base_path, "pras-files", case_name)
     base_folder_schedules = joinpath(base_path, "schedules", case_name)
     base_folder_results = joinpath(base_path, "results", case_name)
-    base_folder_reoptimisation_results = joinpath(base_path, "reoptimisation-results", case_name)
 
     pisp_input_folder = joinpath(base_folder_pisp, "out-ref$(reference_trace)-poe$(poe)", "csv")
     timeseries_folder = "schedule-$(target_year)"
@@ -76,11 +74,9 @@ function assess_adequacy_resilience(target_year::Int=2030,
     if resilience_event != ""
         schedules_folder = joinpath(base_folder_schedules, "out-ref$(reference_trace)-poe$(poe)-$(resilience_event)", "ty$(target_year)")
         results_folder = joinpath(base_folder_results, "out-ref$(reference_trace)-poe$(poe)-$(resilience_event)", "ty$(target_year)")
-        reoptimisation_results_folder = joinpath(base_folder_reoptimisation_results, "out-ref$(reference_trace)-poe$(poe)-$(resilience_event)", "ty$(target_year)")
     else
         schedules_folder = joinpath(base_folder_schedules, "out-ref$(reference_trace)-poe$(poe)", "ty$(target_year)")
         results_folder = joinpath(base_folder_results, "out-ref$(reference_trace)-poe$(poe)", "ty$(target_year)")
-        reoptimisation_results_folder = joinpath(base_folder_reoptimisation_results, "out-ref$(reference_trace)-poe$(poe)", "ty$(target_year)")
     end
 
     println(Threads.nthreads(), " threads available for parallel processing.")
@@ -218,16 +214,10 @@ function assess_adequacy_resilience(target_year::Int=2030,
                 hydro_parameters=hydro_parameters,
                 optimisation_window=optimisation_window, move_forward=move_forward, 
                 optimiser_name=solver, input_folder=pisp_input_folder,
-                genOpDetails=genOpDetails,
-                saving_details=saving_details);
+                genOpDetails=genOpDetails);
 
-        if typeof(sf_new) == Array{Int, 3}
-            SchedNEM.saveSfMatrix(sf_new, filename_output)
-        else
-            SchedNEM.saveSfMatrix(sf_new.shortfall .+ res.shortfall, filename_output)
-            SchedNEM.save_schedule_change(sf_new, joinpath(reoptimisation_results_folder, "schedule_changes_s$(scenario)_batch$(i).csv"))
-        end
-        eens_reoptimised[i] = sum(sf_new.shortfall) ./ sample_number_per_run
+        SchedNEM.saveSfMatrix(sf_new, filename_output)
+        eens_reoptimised[i] = sum(sf_new) ./ sample_number_per_run
     end
     @info "Finished system response analysis."
 
