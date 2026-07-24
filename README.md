@@ -5,7 +5,14 @@ Data and reliability studies for the Australian National Electricity Market (NEM
 This repository contains some sample data, as well as tutorials and scripts to perform reliability studies with [PISP.jl](https://github.com/ARPST-UniMelb/PISP.jl), [PRASNEM.jl](https://github.com/ARPST-UniMelb/PRASNEM.jl), [SchedNEM.jl](https://github.com/ARPST-UniMelb/SchedNEM.jl) and [SiennaNEM.jl](https://github.com/ARPST-UniMelb/SiennaNEM.jl).
 
 > [!CAUTION]
-> The current version is functional and has been extensively tested; however, bugs or other issues may still arise. We would greatly appreciate any feedback or bug reports submitted via https://github.com/ARPST-UniMelb/NEM-reliability-suite/issues 
+> The current version is functional and has been extensively tested; however, bugs or other issues may still arise. We would greatly appreciate any feedback or bug reports submitted via https://github.com/ARPST-UniMelb/NEM-reliability-suite/issues
+>
+
+> [!NOTE]
+> If you are using this or the related repositories for your work, please cite the final report of AR-PST Stage 5:
+> 
+> T. Kopka, M. Yasirroni, P. Apablaza, B. Moya, S. Mhanna, and P. Mancarella, “Resource Adequacy, Risk, and Resilience in Low-Carbon Energy System Planning: Methods, Tools, and Metrics,” Australian Research in Power Systems Transition (AR-PST), Jun. 2026. [Online]. Available: https://www.csiro.au/en/research/technology-space/energy/Electricity-transition/AR-PST/Stage-5
+
 
 ## Getting started
 
