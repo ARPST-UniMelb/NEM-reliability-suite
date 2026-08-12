@@ -1,6 +1,6 @@
 # NEM Reliability Suite - AR-PST Stage 5
 
-Data and reliability studies for the Australian National Electricity Market (NEM).
+Data and reliability studies for the Australian National Electricity Market (NEM), developed for Stage 5 of the [AR-PST initiative](https://www.csiro.au/en/research/technology-space/energy/Electricity-transition/AR-PST/Stage-5).
 
 This repository contains some sample data, as well as tutorials and scripts to perform reliability studies with [PISP.jl](https://github.com/ARPST-UniMelb/PISP.jl), [PRASNEM.jl](https://github.com/ARPST-UniMelb/PRASNEM.jl), [SchedNEM.jl](https://github.com/ARPST-UniMelb/SchedNEM.jl) and [SiennaNEM.jl](https://github.com/ARPST-UniMelb/SiennaNEM.jl).
 

@@ -6,7 +6,6 @@ HiGHS = "87dc4568-4c63-4d18-b0c0-bb2238e4078b"
 JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
 Measures = "442fdcdd-2543-5da2-b0f3-8c86c306513e"
 PISP = "0cf86302-bd88-49fb-82d1-7e27fc78d6eb"
-PRAS = "05348d26-1c52-11e9-35e3-9d51842d34b9"
 PRASCore = "c5c32b99-e7c3-4530-a685-6f76e19f7fe2"
 PRASNEM = "dd18fea1-acda-4cb9-9bf0-b27bbe00ccb1"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
@@ -17,11 +16,10 @@ SiennaNEM = "2b2140f2-b9c0-4054-8dfe-2e6bd74cbbbe"
 StatsPlots = "f3b207a7-027a-5e70-b257-86293d7955fd"
 
 [sources]
-PISP = {rev = "main", url = "https://github.com/ARPST-UniMelb/PISP.jl"}
-PRASCore = {rev = "main", subdir = "PRASCore.jl", url = "https://github.com/ARPST-UniMelb/PRAS"}
-PRASNEM = {rev = "main", url = "https://github.com/ARPST-UniMelb/PRASNEM.jl"}
-SchedNEM = {rev = "main", url = "https://github.com/ARPST-UniMelb/SchedNEM.jl"}
-SiennaNEM = {rev = "main", url = "https://github.com/ARPST-UniMelb/SiennaNEM.jl"}
+PISP = {rev = "v0.1.0", url = "https://github.com/ARPST-UniMelb/ParseISP.jl"}
+PRASCore = {rev = "v0.8.0-DEV", subdir = "PRASCore.jl", url = "https://github.com/ARPST-UniMelb/PRAS"}
+PRASNEM = {rev = "v0.1.0", url = "https://github.com/ARPST-UniMelb/PRASNEM.jl"}
+SiennaNEM = {rev = "v0.0.8", url = "https://github.com/ARPST-UniMelb/SiennaNEM.jl"}
 
 [compat]
 julia = "1.11"
